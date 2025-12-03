@@ -12,9 +12,9 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Projekt_Architektura
 {
-    public partial class Form1 : Form
+    public partial class Symulator : Form
     {
-        public Form1()
+        public Symulator()
         {
             InitializeComponent();
         }
