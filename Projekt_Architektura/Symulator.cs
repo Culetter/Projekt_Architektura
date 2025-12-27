@@ -1,14 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Projekt_Architektura
 {
@@ -128,28 +119,58 @@ namespace Projekt_Architektura
             return false;
         }
 
-        private double Conversion(string bin)
+        private string Conversion(string bin)
         {
+            if(IsZero(bin)) return "0";
+            if(IsInfinity(bin)) return (bin[0] == '1' ? "-∞" : "∞");
+            if (IsNaN(bin)) return "NaN";
             int sign = bin[0] == '0' ? 1 : -1;
 
             int exp = Convert.ToInt32(bin.Substring(1, 8), 2);
 
-            double mantissa = 1.0;
+            double mantissa = 0.0;
             string m = bin.Substring(9);
 
             for (int i = 0; i < m.Length; i++)
                 if (m[i] == '1')
                     mantissa += Math.Pow(2, -(i + 1));
 
-            return sign * mantissa * Math.Pow(2, exp - 127);
-        }
+            if (exp == 0)
+                return (sign * mantissa * Math.Pow(2, -126)).ToString();
 
+            return (sign * (1.0 + mantissa) * Math.Pow(2, exp - 127)).ToString();
+        }
+        private bool IsZero(string num) => num.Substring(1, 31) == new string('0', 31);
+        private bool IsInfinity(string num) => num.Substring(1, 8) == new string('1', 8) && num.Substring(9) == new string('0', 23);
+        private bool IsNaN(string num) => num.Substring(1, 8) == new string('1', 8) && num.Substring(9) != new string('0', 23);
         private void convertBtn_Click(object sender, EventArgs e)
         {
             const string bias = "10000001";
 
             string num1 = firstNum.Text;
             string num2 = secondNum.Text;
+
+            if (IsZero(num1) || IsZero(num2))
+            {
+                resultBin.Text = "0" + new string('0', 8) + new string('0', 23);
+                resultDeci.Text = "0";
+                return;
+            }
+
+            if (IsInfinity(num1) || IsInfinity(num2))
+            {
+                resultBin.Text = (num1[0] == '1' ^ num2[0] == '1' ? "1" : "0") +
+                                  new string('1', 8) + new string('0', 23);
+                resultDeci.Text = (num1[0] == '1' ^ num2[0] == '1' ? "-∞" : "∞");
+                return;
+            }
+
+            if (IsNaN(num1) || IsNaN(num2))
+            {
+                resultBin.Text = "0" + new string('1', 8) + "1" + new string('0', 22);
+                resultDeci.Text = "NaN";
+                return;
+            }
 
             char signChar = num1[0] == num2[0] ? '0' : '1';
 
@@ -177,7 +198,7 @@ namespace Projekt_Architektura
             }
 
             resultBin.Text = signChar + exponent + mantissa;
-            resultDeci.Text = Conversion(resultBin.Text).ToString();
+            resultDeci.Text = Conversion(resultBin.Text);
         }
     }
 }
