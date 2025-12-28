@@ -176,11 +176,24 @@ namespace Projekt_Architektura
 
             string exponent1 = num1.Substring(1, 8);
             string exponent2 = num2.Substring(1, 8);
-
+            
             string mantissa1 = "01" + num1.Substring(9);
             string mantissa2 = "01" + num2.Substring(9);
 
-            string exponent = Add(Add(exponent1, exponent2), bias);
+            int ex1 = Convert.ToInt32(exponent1, 2);
+            int ex2 = Convert.ToInt32(exponent2, 2);
+
+            int res = (ex1 - 127) + (ex2 - 127);
+            string exponent;
+
+            if (res < -126) exponent = new string('0', 8);
+            else if (res > 127)
+            {
+                resultBin.Text = signChar + new string('1', 8) + new string('0', 23);
+                resultDeci.Text = "NaN";
+                return;
+            }
+            else exponent = Add(Add(exponent1, exponent2), bias);
 
             string multipliedMantissa = Multiply(mantissa1, mantissa2);
 
@@ -194,7 +207,16 @@ namespace Projekt_Architektura
 
                 integerPart = integerPart.Substring(0, integerPart.Length - 1);
 
-                exponent = Add(exponent, "1");
+                if(res >= -126) exponent = Add(exponent, "1");
+            }
+
+            while (res < -126)
+            {
+                mantissa = integerPart[integerPart.Length - 1] + mantissa;
+                mantissa = mantissa.Substring(0, 23);
+
+                integerPart = "0";
+                res++;
             }
 
             resultBin.Text = signChar + exponent + mantissa;
