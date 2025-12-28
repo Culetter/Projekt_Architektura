@@ -177,13 +177,17 @@ namespace Projekt_Architektura
             string exponent1 = num1.Substring(1, 8);
             string exponent2 = num2.Substring(1, 8);
             
-            string mantissa1 = "01" + num1.Substring(9);
-            string mantissa2 = "01" + num2.Substring(9);
+            string mantissa1 = (exponent1 == new string('0', 8) ? "00" : "01") + num1.Substring(9);
+            string mantissa2 = (exponent2 == new string('0', 8) ? "00" : "01") + num2.Substring(9);
 
             int ex1 = Convert.ToInt32(exponent1, 2);
             int ex2 = Convert.ToInt32(exponent2, 2);
 
-            int res = (ex1 - 127) + (ex2 - 127);
+            int realEx1 = ex1 == 0 ? -126 : ex1 - 127;
+            int realEx2 = ex2 == 0 ? -126 : ex2 - 127;
+
+            int res = realEx1 + realEx2;
+
             string exponent;
 
             if (res < -126) exponent = new string('0', 8);
